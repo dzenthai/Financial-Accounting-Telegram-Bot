@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - preConditions:
+      - runningAs:
+          username: root
+  - changeSet:
+      id: 5
+      author: dzenthai
+      changes:
+        - createTable:
+            tableName: limits
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: limit_amount
+                  type: decimal
+              - column:
+                  name: account_id
+                  type: bigint
+              - column:
+                  name: date
+                  type: date
+        - addForeignKeyConstraint:
+            baseTableName: limits
+            baseColumnNames: account_id
+            referencedTableName: accounts
+            referencedColumnNames: id
+            constraintName: fk_limits_account_id

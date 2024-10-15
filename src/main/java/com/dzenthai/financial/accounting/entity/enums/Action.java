@@ -1,0 +1,27 @@
+package com.dzenthai.financial.accounting.entity.enums;
+
+
+public enum Action {
+
+    FREE,
+
+    ACCOUNT_ADD,
+    ACCOUNT_DELETE,
+
+    EXPENSE_ADD_AMOUNT,
+    EXPENSE_ADD_CATEGORY,
+    EXPENSE_ADD_NOTE,
+    EXPENSE_ADD_LIMIT,
+    EXPENSE_EDIT_AMOUNT,
+    EXPENSE_EDIT_CATEGORY,
+    EXPENSE_EDIT_NOTE,
+
+    INCOME_ADD_AMOUNT,
+    INCOME_ADD_CATEGORY,
+    INCOME_ADD_NOTE,
+    INCOME_EDIT_AMOUNT,
+    INCOME_EDIT_CATEGORY,
+    INCOME_EDIT_NOTE,
+
+
+}

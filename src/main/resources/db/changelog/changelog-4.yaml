@@ -1,0 +1,42 @@
+databaseChangeLog:
+  - preConditions:
+      - runningAs:
+          username: root
+  - changeSet:
+      id: 4
+      author: dzenthai
+      changes:
+        - createTable:
+            tableName: expenses
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: amount
+                  type: decimal
+              - column:
+                  name: account_id
+                  type: bigint
+              - column:
+                  name: category
+                  type: varchar(32)
+              - column:
+                  name: note
+                  type: text
+              - column:
+                  name: date
+                  type: date
+              - column:
+                  name: limit_exceeded
+                  type: boolean
+        - addForeignKeyConstraint:
+            baseTableName: expenses
+            baseColumnNames: account_id
+            referencedTableName: accounts
+            referencedColumnNames: id
+            constraintName: fk_expenses_account_id

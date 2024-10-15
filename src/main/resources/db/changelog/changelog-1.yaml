@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - preConditions:
+      - runningAs:
+          username: root
+  - changeSet:
+      id: 1
+      author: dzenthai
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: chat_id
+                  type: bigint
+              - column:
+                  name: action
+                  type: varchar(32)
+              - column:
+                  name: current_account_id
+                  type: bigint
+              - column:
+                  name: current_expense_id
+                  type: bigint
+              - column:
+                  name: current_income_id
+                  type: bigint
+              - column:
+                  name: compare_date
+                  type: date

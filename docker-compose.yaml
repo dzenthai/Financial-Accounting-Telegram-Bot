@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: postgres:latest
+    restart: on-failure
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=123456
+    ports:
+      - '5432:5432'
