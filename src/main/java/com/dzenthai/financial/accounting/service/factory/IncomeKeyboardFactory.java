@@ -47,7 +47,7 @@ public class IncomeKeyboardFactory {
 
         User user = userService.findUserByBotApiObject(botApiObject);
         Account account = accountService.getAccountById(Objects.requireNonNull(user).getCurrentAccountId());
-        List<Income> incomes = incomeService.getAllIncomesByAccountAndDateAfter(account, user.getCompareDate());
+        List<Income> incomes = incomeService.getAllIncomesByAccountAndDateAfter(account, account.getCompareDate());
 
         for (Income income : incomes) {
             text.add(income.getCategory().getDisplayName() + income.getAmount());

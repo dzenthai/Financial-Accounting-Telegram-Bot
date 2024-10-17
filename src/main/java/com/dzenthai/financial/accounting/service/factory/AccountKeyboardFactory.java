@@ -76,9 +76,14 @@ public class AccountKeyboardFactory {
         text.add("🗑️ Удалить счет");
         data.add(AccountData.ACCOUNT_DELETE_.name() + accountId);
 
+        text.add("🕒 Дата и время");
+        data.add(AccountData.ACCOUNT_DATETIME_.name() + accountId);
+
+        config.add(2);
+
         text.add("↩️ Назад");
         data.add(AccountData.ACCOUNT.name());
-        config.add(2);
+        config.add(1);
 
         return keyboardFactory.createInlineKeyboard(text, config, data);
     }
@@ -92,6 +97,20 @@ public class AccountKeyboardFactory {
         );
     }
 
+    public InlineKeyboardMarkup editAccountDatetimeKeyboard(String accountId) {
+        return keyboardFactory.createInlineKeyboard(
+                List.of("📍 День", "📍 Неделя", "📍 Месяц", "📍 Полгода", "📍 Год", "↩️ Назад"),
+                List.of(2, 3, 1),
+                List.of(
+                        AccountData.ACCOUNT_DATETIME_DAY_.name() + accountId,
+                        AccountData.ACCOUNT_DATETIME_WEEK_.name() + accountId,
+                        AccountData.ACCOUNT_DATETIME_MONTH_.name() + accountId,
+                        AccountData.ACCOUNT_DATETIME_SIXMONTH_.name() + accountId,
+                        AccountData.ACCOUNT_DATETIME_YEAR_.name() + accountId,
+                        AccountData.ACCOUNT_GET_.name() + accountId)
+        );
+    }
+
 
     public InlineKeyboardMarkup backToAccountMenuAfterSaveAccountKeyboard(Long id) {
         Account account = accountService.getAccountById(id);
@@ -101,6 +120,14 @@ public class AccountKeyboardFactory {
         List<Integer> config = List.of(2);
 
         return keyboardFactory.createInlineKeyboard(text, config, data);
+    }
+
+    public InlineKeyboardMarkup backToAccount(String accountId) {
+        return keyboardFactory.createInlineKeyboard(
+                List.of("👤 Перейти к счету"),
+                List.of(1),
+                List.of(AccountData.ACCOUNT_GET_.name() + accountId)
+        );
     }
 
     public InlineKeyboardMarkup backToAccountMenu() {

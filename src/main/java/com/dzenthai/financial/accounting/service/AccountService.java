@@ -8,6 +8,8 @@ import com.dzenthai.financial.accounting.entity.enums.Action;
 import com.dzenthai.financial.accounting.repository.AccountRepo;
 import com.dzenthai.financial.accounting.service.builder.MessageBuilder;
 import com.dzenthai.financial.accounting.service.factory.AccountKeyboardFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.interfaces.BotApiObject;
@@ -16,12 +18,17 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 
 @Service
 public class AccountService {
 
+    @PersistenceContext
+    private EntityManager entityManager;
     private final AccountKeyboardFactory accountKeyboardFactory;
     private final MessageBuilder messageBuilder;
     private final AccountRepo accountRepo;
@@ -50,7 +57,7 @@ public class AccountService {
         List<Account> account = getAllAccountsByUser(user);
         if (account.isEmpty()) {
             return messageBuilder.buildMessage("""
-                            Меню счетов.
+                            Меню счетов. 🏛️
                             
                             Список счетов пуст.
                             
@@ -63,7 +70,7 @@ public class AccountService {
                     accountKeyboardFactory.accountMenuKeyboard(botApiObject));
         }
         return messageBuilder.buildMessage("""
-                        Меню счетов.
+                        Меню счетов. 🏛️
                         
                         Выберите нужный счет для управления или создайте новый.
                         
@@ -94,6 +101,7 @@ public class AccountService {
             account = Account.builder()
                     .name(name)
                     .user(user)
+                    .compareDate(LocalDateTime.now().minusMonths(1))
                     .build();
             accountRepo.save(account);
             userService.updateUserAction(chatId, Action.FREE);
@@ -127,16 +135,25 @@ public class AccountService {
         return null;
     }
 
+    @Transactional
+    public BotApiMethod<?> setAccountDatetime(CallbackQuery callbackQuery, String accountId, LocalDateTime datetime) {
+        Account account = getAccountById(Long.valueOf(accountId));
+        updateCompareDate(account, datetime);
+        return messageBuilder.buildMessage(
+                "Дата и время успешно установлены!",
+                callbackQuery,
+                accountKeyboardFactory.backToAccount(accountId));
+    }
+
     public BotApiMethod<?> getAccount(CallbackQuery callbackQuery, String id) {
-        User user = userService.findUserByBotApiObject(callbackQuery);
         Account account = getAccountById(Long.valueOf(id));
         BigDecimal totalIncomes = incomeService
-                .getAllIncomesByAccountAndDateAfter(account, user.getCompareDate())
+                .getAllIncomesByAccountAndDateAfter(account, account.getCompareDate())
                 .stream()
                 .map(Income::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal totalExpenses = expenseService
-                .getAllExpensesByAccountAndDateAfter(account, user.getCompareDate())
+                .getAllExpensesByAccountAndDateAfter(account, account.getCompareDate())
                 .stream()
                 .map(Expense::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -153,14 +170,35 @@ public class AccountService {
                     accountKeyboardFactory.accountOperationKeyboard(id)
             );
         }
+        String datetime;
+        LocalDate compareDate = account.getCompareDate().toLocalDate();
+        LocalDate now = LocalDate.now();
+
+        long daysBetween = ChronoUnit.DAYS.between(compareDate, now);
+        long monthsBetween = ChronoUnit.MONTHS.between(compareDate, now);
+        long yearsBetween = ChronoUnit.YEARS.between(compareDate, now);
+
+        if (daysBetween == 1) {
+            datetime = "За день";
+        } else if (daysBetween <= 7) {
+            datetime = "За неделю";
+        } else if (monthsBetween == 1) {
+            datetime = "За текущий месяц";
+        } else if (monthsBetween == 6) {
+            datetime = "За полгода";
+        } else if (yearsBetween == 1) {
+            datetime = "За год";
+        } else {
+            datetime = "За указанный период";
+        }
         return messageBuilder.buildMessage("""
-                        🕒 Текущий месяц:
+                        🕒 %s:
                         
                         ✨ Доходы: %s
                         💸 Расходы: %s
                         
                         💰 Баланс: %s
-                        """.formatted(totalIncomes, totalExpenses, balance),
+                        """.formatted(datetime, totalIncomes, totalExpenses, balance),
                 callbackQuery,
                 accountKeyboardFactory.accountOperationKeyboard(id)
         );
@@ -177,4 +215,14 @@ public class AccountService {
     public List<Account> getAllAccountsByUser(User user) {
         return accountRepo.findAccountsByUser(user).orElse(null);
     }
+
+    @Transactional
+    public void updateCompareDate(Account account, LocalDateTime newDate) {
+        String updateCompareDateQuery = "UPDATE Account a SET a.compareDate = :newDate WHERE a.id = :accountId";
+        entityManager.createQuery(updateCompareDateQuery)
+                .setParameter("newDate", newDate)
+                .setParameter("accountId", account.getId())
+                .executeUpdate();
+    }
+
 }

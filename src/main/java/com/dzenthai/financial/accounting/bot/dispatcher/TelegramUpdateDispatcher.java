@@ -76,7 +76,6 @@ public class TelegramUpdateDispatcher {
             User user = User.builder()
                     .chatId(chatId)
                     .action(Action.FREE)
-                    .compareDate(LocalDate.now().minusMonths(1))
                     .build();
             userRepo.save(user);
         }

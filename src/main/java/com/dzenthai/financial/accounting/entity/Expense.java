@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Getter
@@ -41,9 +42,9 @@ public class Expense {
     @Column(nullable = false)
     private String note;
 
-    @Temporal(TemporalType.DATE)
-    @DateTimeFormat(pattern = "dd/MM/yyyy")
-    private LocalDate date;
+    @Temporal(TemporalType.TIMESTAMP)
+    @DateTimeFormat(pattern = "dd/MM/yyyy hh:mm:ss")
+    private LocalDateTime datetime;
 
     @Column(nullable = true)
     private boolean limitExceeded;

@@ -22,7 +22,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -121,7 +122,7 @@ public class IncomeService {
         Income income = getIncomeById(user.getCurrentIncomeId());
         updateIncomeCategory(income, incomeCategory);
         updateIncomeNote(income, "-");
-        updateIncomeDate(income, LocalDate.now());
+        updateIncomeDate(income, LocalDateTime.now());
         return incomeManager.askForIncomeNoteToAdd(callbackQuery);
     }
 
@@ -138,9 +139,11 @@ public class IncomeService {
         Income income = getIncomeById(Long.parseLong(incomeId));
         String category = income.getCategory().getDisplayName();
         String accountName = income.getAccount().getName();
-        LocalDate date = income.getDate();
+        LocalDateTime datetime = income.getDatetime();
         String note = income.getNote();
         String amount = income.getAmount().toString();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy \nВремя: HH:mm:ss");
+        String formattedDateTime = datetime.format(formatter);
         return messageBuilder.buildMessage("""
                         Доход.
                         
@@ -150,7 +153,7 @@ public class IncomeService {
                         Дата: %s
                         
                         💰 Сумма: %s
-                        """.formatted(category, accountName, note, date, amount),
+                        """.formatted(category, accountName, note, formattedDateTime, amount),
                 callbackQuery,
                 incomeKeyboardFactory.editAndDeleteIncomeKeyboard(incomeId));
     }
@@ -229,7 +232,7 @@ public class IncomeService {
 
         Account account = accountService.getAccountById(Long.valueOf(incomeId));
 
-        List<Income> incomes = getAllIncomesByAccountAndDateAfter(account, LocalDate.now().minusMonths(1));
+        List<Income> incomes = getAllIncomesByAccountAndDateAfter(account, LocalDateTime.now().minusMonths(1));
 
         Map<IncomeCategory, BigDecimal> incomeMap = incomes.stream()
                 .collect(Collectors.groupingBy(
@@ -263,9 +266,9 @@ public class IncomeService {
                 incomeKeyboardFactory.backToMainMenu("Назад"));
     }
 
-    public List<Income> getAllIncomesByAccountAndDateAfter(Account account, LocalDate date) {
+    public List<Income> getAllIncomesByAccountAndDateAfter(Account account, LocalDateTime datetime) {
         entityManager.clear();
-        return incomeRepo.findByAccountAndDateAfter(account, date).orElse(Collections.emptyList());
+        return incomeRepo.findByAccountAndDatetimeAfter(account, datetime).orElse(Collections.emptyList());
     }
 
     private Income getIncomeById(Long incomeId) {
@@ -306,9 +309,9 @@ public class IncomeService {
     }
 
     @Transactional
-    public void updateIncomeDate(Income income, LocalDate newDate) {
+    public void updateIncomeDate(Income income, LocalDateTime newDate) {
         if (newDate != null) {
-            String updateQuery = "UPDATE Income i SET i.date = :newDate WHERE i.id = :incomeId";
+            String updateQuery = "UPDATE Income i SET i.datetime = :newDate WHERE i.id = :incomeId";
             entityManager.createQuery(updateQuery)
                     .setParameter("newDate", newDate)
                     .setParameter("incomeId", income.getId())

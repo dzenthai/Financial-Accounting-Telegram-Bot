@@ -22,6 +22,9 @@ databaseChangeLog:
               - column:
                   name: user_id
                   type: bigint
+              - column:
+                  name: compare_date
+                  type: date
         - addForeignKeyConstraint:
             baseTableName: accounts
             baseColumnNames: user_id

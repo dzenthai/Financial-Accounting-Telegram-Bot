@@ -34,7 +34,4 @@ public class User {
 
     @Column(nullable = true)
     private Long currentIncomeId;
-
-    @Column(nullable = true)
-    private LocalDate compareDate;
 }

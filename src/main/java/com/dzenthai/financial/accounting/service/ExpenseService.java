@@ -23,7 +23,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -129,7 +130,6 @@ public class ExpenseService {
         Expense expense = getExpenseById(user.getCurrentExpenseId());
         updateExpenseCategory(expense, expenseCategory);
         updateExpenseNote(expense, "-");
-        updateExpenseDate(expense, LocalDate.now());
         return expenseManager.askForExpenseNoteToAdd(callbackQuery);
     }
 
@@ -138,7 +138,8 @@ public class ExpenseService {
         User user = userService.findUserByBotApiObject(message);
         Expense expense = getExpenseById(user.getCurrentExpenseId());
         updateExpenseNote(expense, message.getText());
-        userService.updateCurrentExpenseId(user.getChatId(), null, Action.FREE);
+        updateExpenseDate(expense, LocalDateTime.now());
+        userService.updateCurrentExpenseId(user.getChatId(), expense.getId(), Action.FREE);
         return expenseMenu(message);
     }
 
@@ -146,9 +147,11 @@ public class ExpenseService {
         Expense expense = getExpenseById(Long.parseLong(expenseId));
         String category = expense.getCategory().getDisplayName();
         String accountName = expense.getAccount().getName();
-        LocalDate date = expense.getDate();
+        LocalDateTime datetime = expense.getDatetime();
         String note = expense.getNote();
         String amount = expense.getAmount().toString();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy \nВремя: HH:mm:ss");
+        String formattedDateTime = datetime.format(formatter);
         return messageBuilder.buildMessage("""
                         Расход.
                         
@@ -158,7 +161,7 @@ public class ExpenseService {
                         Дата: %s
                         
                         💰 Сумма: %s
-                        """.formatted(category, accountName, note, date, amount),
+                        """.formatted(category, accountName, note, formattedDateTime, amount),
                 callbackQuery,
                 expenseKeyboardFactory.editAndDeleteExpenseKeyboard(expenseId));
     }
@@ -236,7 +239,7 @@ public class ExpenseService {
 
         Account account = accountService.getAccountById(Long.valueOf(expenseId));
 
-        List<Expense> expenses = getAllExpensesByAccountAndDateAfter(account, LocalDate.now().minusMonths(1));
+        List<Expense> expenses = getAllExpensesByAccountAndDateAfter(account, LocalDateTime.now().minusMonths(1));
 
         Map<ExpenseCategory, BigDecimal> expenseMap = expenses.stream()
                 .collect(Collectors.groupingBy(
@@ -280,7 +283,7 @@ public class ExpenseService {
             Limit limit  = Limit.builder()
                     .limitAmount(limitAmount)
                     .account(account)
-                    .date(LocalDate.now())
+                    .datetime(LocalDateTime.now())
                     .build();
             limitService.addLimit(limit);
             userService.updateUserAction(user.getChatId(), Action.FREE);
@@ -349,9 +352,9 @@ public class ExpenseService {
                 
                 💰 Сумма расходов: %s
                 
-                ⚡ Текущий лимит: %s
+                ⚡ Лимит: %s
                 
-                %s Текущий остаток: %s
+                %s Остаток: %s
                 
                 Выберите интересующий вас пункт меню:
                 """.formatted(totalExpenses, limit.getLimitAmount(), emoji, availableBalance),
@@ -378,9 +381,9 @@ public class ExpenseService {
         return expenseRepo.findByAccount(account).orElse(null);
     }
 
-    public List<Expense> getAllExpensesByAccountAndDateAfter(Account account, LocalDate date) {
+    public List<Expense> getAllExpensesByAccountAndDateAfter(Account account, LocalDateTime datetime) {
         entityManager.clear();
-        return expenseRepo.findByAccountAndDateAfter(account, date).orElse(Collections.emptyList());
+        return expenseRepo.findByAccountAndDatetimeAfter(account, datetime).orElse(Collections.emptyList());
 
     }
 
@@ -418,9 +421,9 @@ public class ExpenseService {
     }
 
     @Transactional
-    public void updateExpenseDate(Expense expense, LocalDate newDate) {
+    public void updateExpenseDate(Expense expense, LocalDateTime newDate) {
         if (newDate != null) {
-            String updateQuery = "UPDATE Expense e SET e.date = :newDate WHERE e.id = :expenseId";
+            String updateQuery = "UPDATE Expense e SET e.datetime = :newDate WHERE e.id = :expenseId";
             entityManager.createQuery(updateQuery)
                     .setParameter("newDate", newDate)
                     .setParameter("expenseId", expense.getId())

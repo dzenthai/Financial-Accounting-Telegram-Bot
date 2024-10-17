@@ -31,6 +31,3 @@ databaseChangeLog:
               - column:
                   name: current_income_id
                   type: bigint
-              - column:
-                  name: compare_date
-                  type: date

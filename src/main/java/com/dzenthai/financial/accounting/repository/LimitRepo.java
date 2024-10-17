@@ -11,8 +11,6 @@ import java.util.Optional;
 @Repository
 public interface LimitRepo extends JpaRepository<Limit, Long> {
 
-    Optional<Limit> findLimitById(Long id);
-
     Optional<Limit> findLimitByAccount(Account account);
 
 }

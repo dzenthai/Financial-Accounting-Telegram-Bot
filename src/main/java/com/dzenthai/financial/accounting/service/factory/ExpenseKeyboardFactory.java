@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.interfaces.BotApiObject;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -59,7 +60,7 @@ public class ExpenseKeyboardFactory {
 
         Account account = accountService.getAccountById(Objects.requireNonNull(user).getCurrentAccountId());
 
-        List<Expense> expenses = expenseService.getAllExpensesByAccountAndDateAfter(account, user.getCompareDate());
+        List<Expense> expenses = expenseService.getAllExpensesByAccountAndDateAfter(account, account.getCompareDate());
 
         Limit limit = limitService.getLimitByAccount(account);
 

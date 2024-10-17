@@ -34,14 +34,14 @@ public final class TelegramBot extends TelegramLongPollingBot {
             }
 
         } catch (ConstraintViolationException e) {
-            handleValidationErrors(update, e);
+            handleValidationException(update, e);
         } catch (Exception e) {
             log.error("TelegramBot | Error while dispatching update ", e);
             sendExceptionMessage(update);
         }
     }
 
-    private void handleValidationErrors(Update update, ConstraintViolationException e) {
+    private void handleValidationException(Update update, ConstraintViolationException e) {
         StringBuilder errorMessage = new StringBuilder("Ошибка: ");
         for (ConstraintViolation<?> violation : e.getConstraintViolations()) {
             errorMessage.append(violation.getMessage()).append("\n");

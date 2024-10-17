@@ -29,8 +29,8 @@ databaseChangeLog:
                   name: note
                   type: text
               - column:
-                  name: date
-                  type: date
+                  name: datetime
+                  type: datetime
               - column:
                   name: limit_exceeded
                   type: boolean

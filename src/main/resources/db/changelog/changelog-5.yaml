@@ -23,8 +23,8 @@ databaseChangeLog:
                   name: account_id
                   type: bigint
               - column:
-                  name: date
-                  type: date
+                  name: datetime
+                  type: datetime
         - addForeignKeyConstraint:
             baseTableName: limits
             baseColumnNames: account_id

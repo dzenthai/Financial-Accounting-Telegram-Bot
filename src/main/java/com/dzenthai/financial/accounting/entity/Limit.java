@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Getter
@@ -31,7 +32,7 @@ public class Limit {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @DateTimeFormat(pattern = "dd/MM/yyyy")
-    private LocalDate date;
+    private LocalDateTime datetime;
 }
